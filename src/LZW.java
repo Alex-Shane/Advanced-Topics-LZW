@@ -123,11 +123,88 @@ public class LZW {
 	    return l_raw;
 	  }
 	
+	public static final int BUFFER_SIZE = 8;//number of bits placed at a time into binaryString
+	public String binaryString = "";//String of 1s and 0s
+	public int[] decimalArray;//array of decimals corresponding to each symbol, or 9 bits
+	public Map <Integer, String> decodeDict = new HashMap<Integer,String>(); //same as dict but with decimal Integer as key and String as value.
+	public String decodedString = "";//final original String
+	
+	public static void decompress () throws IOException
+	{
+		toString();
+		makeDecimalArray();
+		buildDictionary();
+		
+		//writing decodedString to .txt file
+		try (PrintWriter out = new PrintWriter("decompressedFile.txt")) {
+		    out.println(text);
+		}
+	}
+	
+	//takes in binary file and returns String of 0's and 1's.
+	//taken from https://www.codejava.net/java-se/file-io/how-to-read-and-write-binary-files-in-java
+	
+	public String toString()
+	{	
+		try (
+				InputStream binaryStream = new FileInputStream("/Users/ava/eclipse-workspace/Alex's LZW/Advanced-Topics-LZW-main/Advanced-Topics-LZW/compressedFile.bin");				
+	        ) {
+	 
+	            
+	            byte[] buffer = new byte[BUFFER_SIZE];
+	 
+	            while (binaryStream.read(buffer) != -1) {
+	            	binaryString.write(buffer);
+	                
+	            //return buildingBinary;
+	            }
+	 
+	        } catch (IOException ex) {
+	        	//return EMPTY_BYTE_ARRAY;
+	        }
+		
+	}
+	
+	public void makeDecimalArray ()
+	{
+		decimalArray = new int [binaryString.length()/9];
+		
+		for (int i = 0; i < binaryString.length()-9; i+=9)
+		{
+			String binSubString = binaryString.substring(i, i+9)
+			decimalArray[i/9] = Integer.parseInt(binSubString,2);
+		}
+	}
+	
+	public void buildDictionary()//changes decodeDict and decodedString
+	{
+		for (int j = 0; j < 256; j++)
+		{
+			dict.put(j, "" + (char)j);
+		}
+		
+		String current = ""+ decodeDict.get(decimalArray[0]);
+		
+		for (int i = 1; i < decimalArray[].length; i++)
+		{
+			String next = ""+decodeDict.get(decimalArray[i]);
+			String firstNextChar = ""+next.charAt(0);
+			String cAndF = current + firstNextChar;
+			
+			decodeDict.put(255+i, cAndF);
+			
+			decodedString += current;
+		}
+	}
+	
+	
+	
 	public static void main (String [] args) throws IOException
 	{
-		File f = new File ("/Users/Alex/Desktop/Advanced-Topics-CS/LZW/lzw-file1.txt");
+		File f = new File ("/Users/ava/eclipse-workspace/Alex's LZW/Advanced-Topics-LZW-main/Advanced-Topics-LZW/lzw-file1.txt");
 		LZW l = new LZW(f);
 		l.compress();
+		l.decompress();
 		
 	}
 }
